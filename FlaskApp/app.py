@@ -1,3 +1,5 @@
+import  time
+
 from flask import Flask, render_template, json, request, redirect, session
 from flask.ext.mysql import MySQL
 from werkzeug import generate_password_hash, check_password_hash
@@ -8,8 +10,8 @@ mysql = MySQL()
 
 # MySQL configurations
 app.config['MYSQL_DATABASE_USER'] = 'root'
-app.config['MYSQL_DATABASE_PASSWORD'] = 'UyNh4eve@6514'
-app.config['MYSQL_DATABASE_DB'] = 'bucketlist'
+app.config['MYSQL_DATABASE_PASSWORD'] = ''
+app.config['MYSQL_DATABASE_DB'] = 'BucketList'
 app.config['MYSQL_DATABASE_HOST'] = 'localhost'
 mysql.init_app(app)
 
@@ -36,19 +38,23 @@ def signUp():
         conn = mysql.connect()
         cursor = conn.cursor()
 
-        #_hash_password = generate_password_hash(_password) 
-
-        cursor.callproc('sp_createUser',(_name,_email,_password))
+        #_password = generate_password_hash(_password) 
+        sql_string = 'insert into tbl_user (user_name, user_username, user_password) values("{}","{}","{}")' \
+            .format(_name, _email, _password)
+        cursor.execute(sql_string)
 
         data = cursor.fetchall()
 
         if len(data) is 0:
             conn.commit()
-            return json.dumps({'message':'User created successfully !'})
+            return json.dumps({
+                    'message': 'User created successfully !',
+                    'success': True
+                })
         else:
             return json.dumps({'error':str(data[0])})  
     else:
-        return json.dumps({'html':'<span>Enter the required fields</span>'})     
+        return json.dumps({'error':'Enter the required fields'})     
 
 
 @app.route('/showSignIn')
@@ -63,9 +69,12 @@ def validateLogin():
 
         con = mysql.connect()
         cursor = con.cursor()
-        cursor.callproc('sp_validateLogin',(_username,))
+        #_password = generate_password_hash(_password) 
+        #cursor.callproc('sp_validateLogin',(_username,))
+        cursor.execute("select * from tbl_user where user_username=%s", (_username, ))
         data = cursor.fetchall()
         if len(data) > 0:
+            print data, "-----data"
             if data[0][3]==_password:
                 session['user'] = data[0][0]
                 return redirect('/userHome')
@@ -106,7 +115,12 @@ def addWish():
  
             conn = mysql.connect()
             cursor = conn.cursor()
-            cursor.callproc('sp_addWish',(_title,_description,_user))
+            sql_string = '''
+                insert into tbl_wish (wish_title, wish_description, wish_user_id, wish_date) 
+                values(%s, %s, %s, %s)
+                '''
+            cursor.execute(sql_string, (_title, _description, _user, time.strftime('%Y-%m-%d %H:%M:%S')))
+
             data = cursor.fetchall()
  
             if len(data) is 0:
@@ -131,7 +145,7 @@ def getWish():
  
             con = mysql.connect()
             cursor = con.cursor()
-            cursor.callproc('sp_GetWishByUser',(_user,))
+            cursor.execute('select * from tbl_wish where wish_user_id=%s', (_user,))
             wishes = cursor.fetchall()
  
             wishes_dict = []
@@ -150,4 +164,4 @@ def getWish():
         return render_template('error.html', error = str(e))
 
 if __name__ == "__main__":
-    app.run(port=5002,debug=True)
+    app.run(port=80, debug=True)

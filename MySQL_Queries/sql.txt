@@ -1,4 +1,13 @@
-CREATE TABLE `tbl_wish` (
+CREATE DATABASE BucketList;
+
+CREATE TABLE `BucketList`.`tbl_user` (
+  `user_id` BIGINT NULL AUTO_INCREMENT,
+  `user_name` VARCHAR(45) NULL,
+  `user_username` VARCHAR(45) NULL,
+  `user_password` VARCHAR(45) NULL,
+  PRIMARY KEY (`user_id`));
+  
+  CREATE TABLE `BucketList`.`tbl_wish` (
   `wish_id` int(11) NOT NULL AUTO_INCREMENT,
   `wish_title` varchar(45) DEFAULT NULL,
   `wish_description` varchar(5000) DEFAULT NULL,
