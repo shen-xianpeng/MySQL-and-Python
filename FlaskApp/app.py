@@ -5,11 +5,11 @@ sys.setdefaultencoding('UTF8')
 
 import  time
 from itertools import islice
+from functools import wraps
 
 from flask import Flask, render_template, json, request, redirect, session
 from flask.ext.mysql import MySQL
 from werkzeug import generate_password_hash, check_password_hash
-
 import git
 
 
@@ -30,6 +30,19 @@ mysql.init_app(app)
 # set a secret key for the session
 app.secret_key = 'why would I tell you my secret key?'
 
+
+
+def requires_auth(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        user = session.get('user')
+        if not user:
+            if request.is_xhr:
+                return json.dumps({"code":10003, "msg":"请登录"})
+            else:
+                return custom_render_template('error.html', error="请登录")
+        return f(*args, **kwargs)
+    return decorated
 
 
 def custom_render_template(template, **kw):
@@ -109,11 +122,9 @@ def validateLogin():
         con.close()
 
 @app.route('/userHome')
+@requires_auth
 def userHome():
-    if session.get('user'):
-        return custom_render_template('userHome.html')
-    else:
-        return custom_render_template('error.html',error = 'Unauthorized Access')
+    return custom_render_template('userHome.html')
 
 @app.route('/logout')
 def logout():
@@ -121,107 +132,102 @@ def logout():
     return redirect('/')
 
 @app.route('/showAddWish')
+@requires_auth
 def showAddWish():
     return custom_render_template('addWish.html')
 
 @app.route('/addWish',methods=['POST'])
+@requires_auth
 def addWish():
     try:
-        if session.get('user'):
-            _title = request.form['inputTitle']
-            _link = request.form['inputLink']
-            _name = request.form['inputName']
-            _description = request.form['inputDescription']
-            _user = session.get('user')
- 
-            try:
-                r = git.Repo.clone_from(_link, GIT_BASE_DIR + "/" + _name)
-            except Exception as e:
-                print(str(e))
-                return custom_render_template('error.html',error = '已存在目录' + _name)
-            conn = mysql.connect()
-            cursor = conn.cursor()
-            sql_string = '''
-                insert into project (name, title, link, description, create_time) 
-                values(%s, %s, %s, %s, %s)
-                '''
-            cursor.execute(sql_string, (_name, _title, _link, _description, time.strftime('%Y-%m-%d %H:%M:%S')))
+        _title = request.form['inputTitle']
+        _link = request.form['inputLink']
+        _name = request.form['inputName']
+        _description = request.form['inputDescription']
+        _user = session.get('user')
 
-            data = cursor.fetchall()
- 
-            if len(data) is 0:
-                conn.commit()
-                return redirect('/userHome')
-            else:
-                return custom_render_template('error.html',error = 'An error occurred!')
- 
+        try:
+            r = git.Repo.clone_from(_link, GIT_BASE_DIR + "/" + _name)
+        except Exception as e:
+            print(str(e))
+            return custom_render_template('error.html',error = '已存在目录' + _name)
+        conn = mysql.connect()
+        cursor = conn.cursor()
+        sql_string = '''
+            insert into project (name, title, link, description, create_time) 
+            values(%s, %s, %s, %s, %s)
+            '''
+        cursor.execute(sql_string, (_name, _title, _link, _description, time.strftime('%Y-%m-%d %H:%M:%S')))
+
+        data = cursor.fetchall()
+
+        if len(data) is 0:
+            conn.commit()
+            return redirect('/userHome')
         else:
-            return custom_render_template('error.html',error = 'Unauthorized Access')
+            return custom_render_template('error.html',error = 'An error occurred!')
+
     except Exception as e:
         return custom_render_template('error.html',error = str(e))
 
 
 @app.route('/getWish')
+@requires_auth
 def getWish():
     try:
-        if session.get('user'):
-            _user = session.get('user')
- 
-            con = mysql.connect()
-            cursor = con.cursor()
-            cursor.execute('select id, name, title, link, description, current from project;')
-            wishes = cursor.fetchall()
- 
-            wishes_dict = []
-            for wish in wishes:
-                wish_dict = {
-                        'id': wish[0],
-                        'name': wish[1],
-                        'title': wish[2],
-						'link': wish[3],
-                        'description': wish[4],
-						'current': wish[5]}
-                wishes_dict.append(wish_dict)
- 
-            return json.dumps(wishes_dict)
-        else:
-            return custom_render_template('error.html', error = 'Unauthorized Access')
+        _user = session.get('user')
+
+        con = mysql.connect()
+        cursor = con.cursor()
+        cursor.execute('select id, name, title, link, description, current from project;')
+        wishes = cursor.fetchall()
+
+        wishes_dict = []
+        for wish in wishes:
+            wish_dict = {
+                    'id': wish[0],
+                    'name': wish[1],
+                    'title': wish[2],
+					'link': wish[3],
+                    'description': wish[4],
+					'current': wish[5]}
+            wishes_dict.append(wish_dict)
+
+        return json.dumps(wishes_dict)
     except Exception as e:
         return custom_render_template('error.html', error = str(e))
 
 
 @app.route('/list_commits')
+@requires_auth
 def listGitCommits():
     try:
-        if session.get('user'):
-            _user = session.get('user')
-            project_id = request.args.get("project_id")
+        _user = session.get('user')
+        project_id = request.args.get("project_id")
 
-            con = mysql.connect()
-            cursor = con.cursor()
-            #_password = generate_password_hash(_password) 
-            #cursor.callproc('sp_validateLogin',(_username,))
-            cursor.execute("select id, name, current from project where id=%s", (project_id, ))
-            data = cursor.fetchall()
-            if len(data)==0:
-                return json.dumps({"code":10000, "msg": "项目不存在"})
-            
-            name = data[0][1]
-            repo = git.Repo(GIT_BASE_DIR + "/" + name)
+        con = mysql.connect()
+        cursor = con.cursor()
+        #_password = generate_password_hash(_password) 
+        #cursor.callproc('sp_validateLogin',(_username,))
+        cursor.execute("select id, name, current from project where id=%s", (project_id, ))
+        data = cursor.fetchall()
+        if len(data)==0:
+            return json.dumps({"code":10000, "msg": "项目不存在"})
+        
+        name = data[0][1]
+        repo = git.Repo(GIT_BASE_DIR + "/" + name)
 
-            r=repo.iter_commits()
-            commit_list = []
-            for c in islice(r, 0, 10, 1):
-                commit = {
-                        'id': str(c),
-                        "name": c.message,
-                        "datetime": str(c.committed_datetime)
-                        }
-                commit_list.append(commit)
- 
-            return json.dumps(commit_list)
-        else:
-            return custom_render_template('error.html', error = 'Unauthorized Access')
+        r=repo.iter_commits()
+        commit_list = []
+        for c in islice(r, 0, 10, 1):
+            commit = {
+                    'id': str(c),
+                    "name": c.message,
+                    "datetime": str(c.committed_datetime)
+                    }
+            commit_list.append(commit)
+
+        return json.dumps(commit_list)
     except Exception as e:
         return custom_render_template('error.html', error = str(e))
 		
