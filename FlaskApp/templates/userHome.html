@@ -2,7 +2,7 @@
 <html lang="en">
  
 <head>
-    <title>Python Flask Bucket List App</title>
+    <title>代码部署管理</title>
  
  
     <link href="http://getbootstrap.com/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -16,14 +16,16 @@
                 url : '/getWish',
                 type : 'GET',
                 success: function(res){
-                    var div = $('<div>')
-        .attr('class', 'list-group')
-        .append($('<a>')
-            .attr('class', 'list-group-item active')
-            .append($('<h4>')
-                .attr('class', 'list-group-item-heading'),
-                $('<p>')
-                .attr('class', 'list-group-item-text')));
+                    var tr = $('<tr>')
+					
+        		.append($('<td>').attr('class', 'id'));
+            tr.append($('<td>').attr('class', 'name'));
+			tr.append($('<td>').attr('class', 'title'));
+			tr.append($('<td>').attr('class', 'link'));
+		    tr.append($('<td>').attr('class', 'description'));
+				tr.append($('<span>').attr('class', 'action-btn')
+			
+			);
                                     
                     
                     
@@ -31,10 +33,13 @@
                     var wish = '';
                     
                     $.each(wishObj,function(index, value){
-                        wish = $(div).clone();
-                        $(wish).find('h4').text(value.Title);
-                        $(wish).find('p').text(value.Description);
-                        $('.jumbotron').append(wish);
+                        wish = $(tr).clone();
+                        $(wish).find('td.id').text(value.id);
+						$(wish).find('td.name').text(value.name);
+						$(wish).find('td.link').text(value.link);
+                        $(wish).find('td.title').text(value.title);
+						$(wish).find('.action-btn').text("发布");
+                        $('.deploy-rows').append(wish);
                     });
                 },
                 error: function(error){
@@ -52,22 +57,37 @@
         <div class="header">
             <nav>
                 <ul class="nav nav-pills pull-right">
-                    <li role="presentation" class="active"><a href="/logout">Logout</a>
+                    <li role="presentation" class="active"><a href="/logout">退出</a>
                     </li>
-                    <li role="presentation"><a href="/showAddWish">Add Wish</a></li>
+                    <li role="presentation"><a href="/showAddWish">添加仓库</a></li>
                 </ul>
             </nav>
-            <h3 class="text-muted">Python Flask App</h3>
+            <h3 class="text-muted">代码部署</h3>
         </div>
  
-        <div class="jumbotron">
-            
+        <div class="">
+            <table class="table">
+			    <thead>
+			        <tr>
+			            <th>id</th>
+						<th>名字</th>
+			            <th>标题</th>
+						<th>仓库地址</th>
+						<th>描述</th>
+			            <th>操作</th>
+			        </tr>
+			    </thead>
+			    <tbody class="deploy-rows">
+			      
+			    </tbody>
+			</table>
+
  
         </div>
  
  
         <footer class="footer">
-            <p>&copy; Company 2015</p>
+            <p>&copy; SMM 2016</p>
         </footer>
  
     </div>

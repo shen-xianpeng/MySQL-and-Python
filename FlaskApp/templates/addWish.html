@@ -2,7 +2,7 @@
 <html lang="en">
  
 <head>
-    <title>Python Flask Bucket List App</title>
+    <title>代码发布</title>
  
  
     <link href="http://getbootstrap.com/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -20,32 +20,48 @@
         <div class="header">
             <nav>
                 <ul class="nav nav-pills pull-right">
-                    <li role="presentation" class="active"><a href="#">Add Item</a>
+                    <li role="presentation" class="active"><a href="#">添加仓库</a>
                     </li>
-                    <li role="presentation"><a href="/logout">Logout</a>
+                    <li role="presentation"><a href="/logout">退出</a>
                     </li>
                 </ul>
             </nav>
-            <h3 class="text-muted">Python Flask App</h3>
+            <h3 class="text-muted">代码部署</h3>
         </div>
         <section>
             <form class="form-horizontal" method="post" action="/addWish">
                 <fieldset>
  
                     <!-- Form Name -->
-                    <legend>Create Your Wish</legend>
+                    <legend>添加仓库</legend>
  
                     <!-- Text input-->
-                    <div class="form-group">
-                        <label class="col-md-4 control-label" for="txtTitle">Title</label>
+					
+					<div class="form-group">
+                        <label class="col-md-4 control-label" for="txtTitle">标志</label>
                         <div class="col-md-4">
-                            <input id="txtTitle" name="inputTitle" type="text" placeholder="placeholder" class="form-control input-md">
+                            <input id="txtTitle" name="inputName" type="text" placeholder="项目标识" class="form-control input-md">
+                        </div>
+                    </div>
+					
+					<div class="form-group">
+                        <label class="col-md-4 control-label" for="txtTitle">标题</label>
+                        <div class="col-md-4">
+                            <input id="txtTitle" name="inputTitle" type="text" placeholder="项目标题" class="form-control input-md">
+                        </div>
+                    </div>
+					
+					
+                    <div class="form-group">
+                        <label class="col-md-4 control-label" for="txtTitle">地址</label>
+                        <div class="col-md-4">
+                            <input id="txtTitle" name="inputLink" type="text" placeholder="项目github地址" class="form-control input-md">
                         </div>
                     </div>
  
                     <!-- Textarea -->
                     <div class="form-group">
-                        <label class="col-md-4 control-label" for="txtPost">Post</label>
+                        <label class="col-md-4 control-label" for="txtPost">描述</label>
                         <div class="col-md-4">
                             <textarea class="form-control" id="txtPost" name="inputDescription"></textarea>
                         </div>
@@ -55,7 +71,7 @@
                     <div class="form-group">
                         <label class="col-md-4 control-label" for="singlebutton"></label>
                         <div class="col-md-4">
-                            <input id="singlebutton" name="singlebutton" class="btn btn-primary" type="submit" value="Publish" />
+                            <input id="singlebutton" name="singlebutton" class="btn btn-primary" type="submit" value="添加" />
                         </div>
                     </div>
  

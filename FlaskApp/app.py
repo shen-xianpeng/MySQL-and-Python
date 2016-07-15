@@ -1,17 +1,26 @@
+# -*- coding: utf-8 -*-
+import sys
+reload(sys)  # Reload does the trick!
+sys.setdefaultencoding('UTF8')
+
 import  time
 
 from flask import Flask, render_template, json, request, redirect, session
 from flask.ext.mysql import MySQL
 from werkzeug import generate_password_hash, check_password_hash
 
+
+GIT_BASE_DIR = "/Users/shenxianpeng/test"
+
 app = Flask(__name__)
 
 mysql = MySQL()
 
+
 # MySQL configurations
 app.config['MYSQL_DATABASE_USER'] = 'root'
 app.config['MYSQL_DATABASE_PASSWORD'] = ''
-app.config['MYSQL_DATABASE_DB'] = 'BucketList'
+app.config['MYSQL_DATABASE_DB'] = 'deploy'
 app.config['MYSQL_DATABASE_HOST'] = 'localhost'
 mysql.init_app(app)
 
@@ -110,16 +119,18 @@ def addWish():
     try:
         if session.get('user'):
             _title = request.form['inputTitle']
+            _link = request.form['inputLink']
+            _name = request.form['inputName']
             _description = request.form['inputDescription']
             _user = session.get('user')
  
             conn = mysql.connect()
             cursor = conn.cursor()
             sql_string = '''
-                insert into tbl_wish (wish_title, wish_description, wish_user_id, wish_date) 
-                values(%s, %s, %s, %s)
+                insert into project (name, title, link, description, create_time) 
+                values(%s, %s, %s, %s, %s)
                 '''
-            cursor.execute(sql_string, (_title, _description, _user, time.strftime('%Y-%m-%d %H:%M:%S')))
+            cursor.execute(sql_string, (_name, _title, _link, _description, time.strftime('%Y-%m-%d %H:%M:%S')))
 
             data = cursor.fetchall()
  
@@ -145,16 +156,17 @@ def getWish():
  
             con = mysql.connect()
             cursor = con.cursor()
-            cursor.execute('select * from tbl_wish where wish_user_id=%s', (_user,))
+            cursor.execute('select id, name, title, link, description from project;')
             wishes = cursor.fetchall()
  
             wishes_dict = []
             for wish in wishes:
                 wish_dict = {
-                        'Id': wish[0],
-                        'Title': wish[1],
-                        'Description': wish[2],
-                        'Date': wish[4]}
+                        'id': wish[0],
+                        'name': wish[1],
+                        'title': wish[2],
+						'link': wish[3],
+                        'description': wish[4]}
                 wishes_dict.append(wish_dict)
  
             return json.dumps(wishes_dict)
