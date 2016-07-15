@@ -48,3 +48,9 @@ body {
 	cursor: pointer;
 }
 
+
+.btn-group.bootstrap-select {
+	width: 100% !important;
+}
+
+

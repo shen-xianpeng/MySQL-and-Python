@@ -4,10 +4,13 @@ reload(sys)  # Reload does the trick!
 sys.setdefaultencoding('UTF8')
 
 import  time
+from itertools import islice
 
 from flask import Flask, render_template, json, request, redirect, session
 from flask.ext.mysql import MySQL
 from werkzeug import generate_password_hash, check_password_hash
+
+import git
 
 
 GIT_BASE_DIR = "/Users/shenxianpeng/test"
@@ -156,7 +159,7 @@ def getWish():
  
             con = mysql.connect()
             cursor = con.cursor()
-            cursor.execute('select id, name, title, link, description from project;')
+            cursor.execute('select id, name, title, link, description, current from project;')
             wishes = cursor.fetchall()
  
             wishes_dict = []
@@ -166,7 +169,8 @@ def getWish():
                         'name': wish[1],
                         'title': wish[2],
 						'link': wish[3],
-                        'description': wish[4]}
+                        'description': wish[4],
+						'current': wish[5]}
                 wishes_dict.append(wish_dict)
  
             return json.dumps(wishes_dict)
@@ -175,5 +179,31 @@ def getWish():
     except Exception as e:
         return render_template('error.html', error = str(e))
 
+
+@app.route('/list_commits')
+def listGitCommits():
+    try:
+        if session.get('user'):
+            _user = session.get('user')
+ 			
+            repo = git.Repo("/Users/shenxianpeng/test/deploy")
+
+            r=repo.iter_commits()
+            commit_list = []
+            for c in islice(r, 0, 10, 1):
+                commit = {
+                        'id': str(c),
+                        "name": c.message,
+                        "datetime": str(c.committed_datetime)
+                        }
+                commit_list.append(commit)
+ 
+            return json.dumps(commit_list)
+        else:
+            return render_template('error.html', error = 'Unauthorized Access')
+    except Exception as e:
+        return render_template('error.html', error = str(e))
+		
+		
 if __name__ == "__main__":
     app.run(port=80, debug=True)

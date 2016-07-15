@@ -4,14 +4,44 @@
 <head>
     <title>代码部署管理</title>
  
- 
-    <link href="http://getbootstrap.com/dist/css/bootstrap.min.css" rel="stylesheet">
- 
-    <link href="http://getbootstrap.com/examples/jumbotron-narrow/jumbotron-narrow.css" rel="stylesheet">
+     <script src="../static/js/jquery-1.12.2.js"></script>
+
+	<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+	<link href="//cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.10.0/css/bootstrap-select.min.css" rel="stylesheet" type="text/css" />
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+	<script src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.10.0/js/bootstrap-select.min.js"></script>
+    <link href="../static/bootstrap-dialog.min.css" rel="stylesheet">
+	<script src="../static/bootstrap-dialog.min.js"></script>
+	<link href="http://getbootstrap.com/examples/jumbotron-narrow/jumbotron-narrow.css" rel="stylesheet">
     <link href="../static/css/signup.css" rel="stylesheet">
-    <script src="../static/js/jquery-1.12.2.js"></script>
     <script>
         $(function(){
+			function listCommits(e) {
+				 $.ajax({
+	                url : '/list_commits',
+	                type : 'GET',
+	                success: function(res){
+	                  
+		                    var commitLists = JSON.parse(res);
+	
+		                    $.each(commitLists,function(index, value){
+		                        	e.append(
+									$("<option>").html("版本1")
+										.attr(
+											"data-content",
+											"<span>" + value.id + "</span><br> " + value.name + "<br>" + value.datetime
+											)
+										.attr(
+											"value",
+											value.id
+											)
+							    	)
+	
+		                    })
+							 
+					}
+				})
+			}
             $.ajax({
                 url : '/getWish',
                 type : 'GET',
@@ -23,6 +53,7 @@
 			tr.append($('<td>').attr('class', 'title'));
 			tr.append($('<td>').attr('class', 'link'));
 		    tr.append($('<td>').attr('class', 'description'));
+			tr.append($('<td>').attr('class', 'current'));
 				tr.append($('<span>').attr('class', 'action-btn')
 			
 			);
@@ -38,14 +69,52 @@
 						$(wish).find('td.name').text(value.name);
 						$(wish).find('td.link').text(value.link);
                         $(wish).find('td.title').text(value.title);
+						$(wish).find('td.description').text(value.description);
+						$(wish).find('td.current').text(value.current);
 						$(wish).find('.action-btn').text("发布");
                         $('.deploy-rows').append(wish);
                     });
+
+					$(".action-btn").click(function() {
+						window.t = this;
+						BootstrapDialog.show({
+				            title: $(this).parent().find("td.name").html() + '发布代码',
+				            message: function(dialog) {
+				                var $content = $('<div><button class="btn btn-success">中止发布</button></div>');
+				                var $footerButton = dialog.getButton('btn-1');
+				                $content.find('button').click({$footerButton: $footerButton}, function(event) {
+				                    event.data.$footerButton.enable();
+				                    event.data.$footerButton.stopSpin();
+				                    dialog.setClosable(true);
+				                });
+								$content.append($("<br>"));
+								
+								var $select = $('<select class="selectpicker"></select>')
+								
+								listCommits($select);
+								setTimeout(function() {$select.selectpicker();}, 500)
+								$content.append($select);
+				                return $content;
+				            },
+				            buttons: [{
+				                id: 'btn-1',
+				                label: '确认发布',
+				                action: function(dialog) {
+				                    var $button = this; // 'this' here is a jQuery object that wrapping the <button> DOM element.
+				                    $button.disable();
+				                    $button.spin();
+				                    dialog.setClosable(false);
+				                }
+				            }]
+				        });
+					});
+			
                 },
                 error: function(error){
                     console.log(error);
                 }
             });
+		
         });
     </script>
  
@@ -74,6 +143,7 @@
 			            <th>标题</th>
 						<th>仓库地址</th>
 						<th>描述</th>
+						<th>当前版本</th>
 			            <th>操作</th>
 			        </tr>
 			    </thead>
