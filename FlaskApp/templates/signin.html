@@ -1,49 +1,28 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <title>代码部署</title>
- 
-    
-    <link href="http://getbootstrap.com/dist/css/bootstrap.min.css" rel="stylesheet">
- 
-    <link href="http://getbootstrap.com/examples/jumbotron-narrow/jumbotron-narrow.css" rel="stylesheet">
-    <link href="../static/css/signup.css" rel="stylesheet">
-    <script src="../static/js/jquery-1.12.2.js"></script>
-    
-  </head>
- 
-  <body>
- 
-    <div class="container">
-      <div class="header">
-        <nav>
-          <ul class="nav nav-pills pull-right">
-            <li role="presentation" ><a href="/">首页</a></li>
-            <li role="presentation" ><a href="/showSignUp">注册</a></li>
-            <li role="presentation" class="active"><a href="#">登录</a></li>
-          </ul>
-        </nav>
-        <h3 class="text-muted">代码部署</h3>
-      </div>
- 
-      <div class="jumbotron">
-        <h1>代码部署</h1>
-        <form class="form-signin" action="/validateLogin" method="post">
-        <label for="inputEmail" class="sr-only">Email address</label>
-        <input type="email" name="inputEmail" id="inputEmail" class="form-control" placeholder="用户名" required autofocus>
-        <label for="inputPassword" class="sr-only">Password</label>
-        <input type="password" name="inputPassword" id="inputPassword" class="form-control" placeholder="密码" required>
-         
-        <button id="btnSignIn" class="btn btn-lg btn-primary btn-block" type="submit">登录</button>
-      </form>
-      </div>
- 
-       
- 
-      <footer class="footer">
-        <p>&copy; SMM 2016</p>
-      </footer>
- 
-    </div>
-  </body>
-</html>
+
+	
+{% extends "root.tpl" %}
+
+ 	{% block css_files %}
+    		<link href="../static/css/signup.css" rel="stylesheet">
+	{% endblock %}
+	
+	{% block header_js_files %}
+	{% endblock %}
+	
+	{% block content %}	
+        <div class="jumbotron">
+	        <h1>代码部署</h1>
+	        <form class="form-signin" action="/validateLogin" method="post">
+		        <label for="inputEmail" class="sr-only">Email address</label>
+		        <input type="email" name="inputEmail" id="inputEmail" class="form-control" placeholder="用户名" required autofocus>
+		        <label for="inputPassword" class="sr-only">Password</label>
+		        <input type="password" name="inputPassword" id="inputPassword" class="form-control" placeholder="密码" required>
+		         
+		        <button id="btnSignIn" class="btn btn-lg btn-primary btn-block" type="submit">登录</button>
+	        </form>
+		</div>
+		
+	{% endblock  %}
+
+	{% block footer_js_files %}
+	{% endblock %}

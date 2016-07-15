@@ -1,14 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
- 
-<head>
-    <title>代码部署管理</title>
- 
-     <script src="../static/js/jquery-1.12.2.js"></script>
+{% extends "root.tpl" %}
 
-	<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+	{% block header_js_files %}
+
 	<link href="//cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.10.0/css/bootstrap-select.min.css" rel="stylesheet" type="text/css" />
-	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
 	<script src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.10.0/js/bootstrap-select.min.js"></script>
     <link href="../static/bootstrap-dialog.min.css" rel="stylesheet">
 	<script src="../static/bootstrap-dialog.min.js"></script>
@@ -18,7 +12,7 @@
         $(function(){
 			function listCommits(e) {
 				 $.ajax({
-	                url : '/list_commits',
+	                url : '/list_commits?project_id=2',
 	                type : 'GET',
 	                success: function(res){
 	                  
@@ -117,23 +111,12 @@
 		
         });
     </script>
- 
-</head>
- 
-<body>
- 
-    <div class="container">
-        <div class="header">
-            <nav>
-                <ul class="nav nav-pills pull-right">
-                    <li role="presentation" class="active"><a href="/logout">退出</a>
-                    </li>
-                    <li role="presentation"><a href="/showAddWish">添加仓库</a></li>
-                </ul>
-            </nav>
-            <h3 class="text-muted">代码部署</h3>
-        </div>
- 
+ 	
+	{% endblock %}
+
+
+	{% block content %}
+
         <div class="">
             <table class="table">
 			    <thead>
@@ -152,15 +135,8 @@
 			    </tbody>
 			</table>
 
- 
         </div>
  
+	{% endblock %}
+
  
-        <footer class="footer">
-            <p>&copy; SMM 2016</p>
-        </footer>
- 
-    </div>
-</body>
- 
-</html>

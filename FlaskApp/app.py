@@ -13,7 +13,7 @@ from werkzeug import generate_password_hash, check_password_hash
 import git
 
 
-GIT_BASE_DIR = "/Users/shenxianpeng/test"
+GIT_BASE_DIR = "/Users/xianpeng/workspace/test"
 
 app = Flask(__name__)
 
@@ -22,7 +22,7 @@ mysql = MySQL()
 
 # MySQL configurations
 app.config['MYSQL_DATABASE_USER'] = 'root'
-app.config['MYSQL_DATABASE_PASSWORD'] = ''
+app.config['MYSQL_DATABASE_PASSWORD'] = 'Smm'
 app.config['MYSQL_DATABASE_DB'] = 'deploy'
 app.config['MYSQL_DATABASE_HOST'] = 'localhost'
 mysql.init_app(app)
@@ -30,13 +30,20 @@ mysql.init_app(app)
 # set a secret key for the session
 app.secret_key = 'why would I tell you my secret key?'
 
+
+
+def custom_render_template(template, **kw):
+    user = session.get('user')
+    kw["user"] = user
+    return render_template(template, **kw)
+
 @app.route("/")
 def main():
-    return render_template('index.html')
+    return custom_render_template('index.html')
 
 @app.route('/showSignUp')
 def showSignUp():
-    return render_template('signup.html')
+    return custom_render_template('signup.html')
 
 @app.route('/signUp',methods=['POST','GET'])
 def signUp():
@@ -71,7 +78,7 @@ def signUp():
 
 @app.route('/showSignIn')
 def showSignin():
-    return render_template('signin.html')
+    return custom_render_template('signin.html')
 
 @app.route('/validateLogin',methods=['POST'])
 def validateLogin():
@@ -91,12 +98,12 @@ def validateLogin():
                 session['user'] = data[0][0]
                 return redirect('/userHome')
             else:
-                return render_template('error.html',error = 'Wrong Email address or Password')
+                return custom_render_template('error.html',error = 'Wrong Email address or Password')
         else:
-            return render_template('error.html',error='Wrong Email address or Password')
+            return custom_render_template('error.html',error='Wrong Email address or Password')
 
     except Exception as e:
-        return render_template('error.html',error=str(e))
+        return custom_render_template('error.html',error=str(e))
     finally:
         cursor.close()
         con.close()
@@ -104,9 +111,9 @@ def validateLogin():
 @app.route('/userHome')
 def userHome():
     if session.get('user'):
-        return render_template('userHome.html')
+        return custom_render_template('userHome.html')
     else:
-        return render_template('error.html',error = 'Unauthorized Access')
+        return custom_render_template('error.html',error = 'Unauthorized Access')
 
 @app.route('/logout')
 def logout():
@@ -115,7 +122,7 @@ def logout():
 
 @app.route('/showAddWish')
 def showAddWish():
-    return render_template('addWish.html')
+    return custom_render_template('addWish.html')
 
 @app.route('/addWish',methods=['POST'])
 def addWish():
@@ -127,6 +134,11 @@ def addWish():
             _description = request.form['inputDescription']
             _user = session.get('user')
  
+            try:
+                r = git.Repo.clone_from(_link, GIT_BASE_DIR + "/" + _name)
+            except Exception as e:
+                print(str(e))
+                return custom_render_template('error.html',error = '已存在目录' + _name)
             conn = mysql.connect()
             cursor = conn.cursor()
             sql_string = '''
@@ -141,15 +153,13 @@ def addWish():
                 conn.commit()
                 return redirect('/userHome')
             else:
-                return render_template('error.html',error = 'An error occurred!')
+                return custom_render_template('error.html',error = 'An error occurred!')
  
         else:
-            return render_template('error.html',error = 'Unauthorized Access')
+            return custom_render_template('error.html',error = 'Unauthorized Access')
     except Exception as e:
-        return render_template('error.html',error = str(e))
-    finally:
-        cursor.close()
-        conn.close()
+        return custom_render_template('error.html',error = str(e))
+
 
 @app.route('/getWish')
 def getWish():
@@ -175,9 +185,9 @@ def getWish():
  
             return json.dumps(wishes_dict)
         else:
-            return render_template('error.html', error = 'Unauthorized Access')
+            return custom_render_template('error.html', error = 'Unauthorized Access')
     except Exception as e:
-        return render_template('error.html', error = str(e))
+        return custom_render_template('error.html', error = str(e))
 
 
 @app.route('/list_commits')
@@ -185,8 +195,19 @@ def listGitCommits():
     try:
         if session.get('user'):
             _user = session.get('user')
- 			
-            repo = git.Repo("/Users/shenxianpeng/test/deploy")
+            project_id = request.args.get("project_id")
+
+            con = mysql.connect()
+            cursor = con.cursor()
+            #_password = generate_password_hash(_password) 
+            #cursor.callproc('sp_validateLogin',(_username,))
+            cursor.execute("select id, name, current from project where id=%s", (project_id, ))
+            data = cursor.fetchall()
+            if len(data)==0:
+                return json.dumps({"code":10000, "msg": "项目不存在"})
+            
+            name = data[0][1]
+            repo = git.Repo(GIT_BASE_DIR + "/" + name)
 
             r=repo.iter_commits()
             commit_list = []
@@ -200,9 +221,9 @@ def listGitCommits():
  
             return json.dumps(commit_list)
         else:
-            return render_template('error.html', error = 'Unauthorized Access')
+            return custom_render_template('error.html', error = 'Unauthorized Access')
     except Exception as e:
-        return render_template('error.html', error = str(e))
+        return custom_render_template('error.html', error = str(e))
 		
 		
 if __name__ == "__main__":
