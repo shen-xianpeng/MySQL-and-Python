@@ -8,11 +8,12 @@
 	<script src="../static/bootstrap-dialog.min.js"></script>
 	<link href="http://getbootstrap.com/examples/jumbotron-narrow/jumbotron-narrow.css" rel="stylesheet">
     <link href="../static/css/signup.css" rel="stylesheet">
+    <link href="../static/css/list_project.css" rel="stylesheet">
     <script>
         $(function(){
-			function listCommits(e) {
+			function listCommits(e, projectId) {
 				 $.ajax({
-	                url : '/list_commits?project_id=2',
+	                url : '/list_commits?project_id='+projectId,
 	                type : 'GET',
 	                success: function(res){
 	                  
@@ -23,7 +24,7 @@
 									$("<option>").html("版本1")
 										.attr(
 											"data-content",
-											"<span>" + value.id + "</span><br> " + value.name + "<br>" + value.datetime
+											"<span class='commit-name'>" + value.name + "</span><br> " + value.id + "<br>" + value.datetime
 											)
 										.attr(
 											"value",
@@ -37,7 +38,7 @@
 				})
 			}
             $.ajax({
-                url : '/getWish',
+                url : '/get_project_list',
                 type : 'GET',
                 success: function(res){
                     var tr = $('<tr>')
@@ -48,7 +49,7 @@
 			tr.append($('<td>').attr('class', 'link'));
 		    tr.append($('<td>').attr('class', 'description'));
 			tr.append($('<td>').attr('class', 'current'));
-				tr.append($('<span>').attr('class', 'action-btn')
+				tr.append($('<td>').append($('<span>').attr('class', 'action-btn'))
 			
 			);
                                     
@@ -70,9 +71,10 @@
                     });
 
 					$(".action-btn").click(function() {
-						window.t = this;
+						btn = this;
+						window.t = btn;
 						BootstrapDialog.show({
-				            title: $(this).parent().find("td.name").html() + '发布代码',
+				            title: $(this).parent().parent().find("td.name").html() + '发布代码',
 				            message: function(dialog) {
 				                var $content = $('<div><button class="btn btn-success">中止发布</button></div>');
 				                var $footerButton = dialog.getButton('btn-1');
@@ -85,7 +87,11 @@
 								
 								var $select = $('<select class="selectpicker"></select>')
 								
-								listCommits($select);
+								projectId = $(btn).parent().parent().find("td.id").html();
+								if (projectId=="") {
+									return alert("请选择项目")
+								}
+								listCommits($select, projectId);
 								setTimeout(function() {$select.selectpicker();}, 500)
 								$content.append($select);
 				                return $content;

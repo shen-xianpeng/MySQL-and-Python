@@ -1,0 +1,9 @@
+
+
+.deploy-rows td {
+	line-height: 50px !important;
+}
+
+.commit-name {
+	font-weight: 800;
+}

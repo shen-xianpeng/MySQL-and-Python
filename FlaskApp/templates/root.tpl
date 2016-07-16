@@ -25,16 +25,17 @@
         <div class="header">
             <nav>
                 <ul class="nav nav-pills pull-right">
-                    <li role="presentation" class="active"><a href="/">首页</a>
+                    <li role="presentation" class=""><a href="/">首页</a>
                     </li>
                   
 					
 					{% if user %}
-						<li role="presentation" class=""><a href="/userHome">个人</a>
+						<li role="presentation"><a href="/show_add_project">添加项目</a></li>
+
+						<li role="presentation" class=""><a href="/projects">项目列表</a>
 						</li>
 						<li role="presentation" class=""><a href="/logout">退出</a>
 	                    </li>
-	                    <li role="presentation"><a href="/showAddWish">添加仓库</a></li>
 					{% else %}
 					  <li role="presentation"><a href="showSignIn">登录</a>
 	                    </li>

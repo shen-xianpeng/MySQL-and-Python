@@ -71,7 +71,7 @@ def signUp():
         cursor = conn.cursor()
 
         #_password = generate_password_hash(_password) 
-        sql_string = 'insert into tbl_user (user_name, user_username, user_password) values("{}","{}","{}")' \
+        sql_string = 'insert into user (user_name, user_username, user_password) values("{}","{}","{}")' \
             .format(_name, _email, _password)
         cursor.execute(sql_string)
 
@@ -103,17 +103,17 @@ def validateLogin():
         cursor = con.cursor()
         #_password = generate_password_hash(_password) 
         #cursor.callproc('sp_validateLogin',(_username,))
-        cursor.execute("select * from tbl_user where user_username=%s", (_username, ))
+        cursor.execute("select * from user where user_username=%s", (_username, ))
         data = cursor.fetchall()
         if len(data) > 0:
             print data, "-----data"
             if data[0][3]==_password:
                 session['user'] = data[0][0]
-                return redirect('/userHome')
+                return redirect('/projects')
             else:
-                return custom_render_template('error.html',error = 'Wrong Email address or Password')
+                return custom_render_template('error.html',error = '用户名或密码错误')
         else:
-            return custom_render_template('error.html',error='Wrong Email address or Password')
+            return custom_render_template('error.html',error='用户名或密码错误')
 
     except Exception as e:
         return custom_render_template('error.html',error=str(e))
@@ -121,20 +121,20 @@ def validateLogin():
         cursor.close()
         con.close()
 
-@app.route('/userHome')
+@app.route('/projects')
 @requires_auth
 def userHome():
-    return custom_render_template('userHome.html')
+    return custom_render_template('projects.html')
 
 @app.route('/logout')
 def logout():
     session.pop('user',None)
     return redirect('/')
 
-@app.route('/showAddWish')
+@app.route('/show_add_project')
 @requires_auth
 def showAddWish():
-    return custom_render_template('addWish.html')
+    return custom_render_template('show_add_project.html')
 
 @app.route('/addWish',methods=['POST'])
 @requires_auth
@@ -163,7 +163,7 @@ def addWish():
 
         if len(data) is 0:
             conn.commit()
-            return redirect('/userHome')
+            return redirect('/projects')
         else:
             return custom_render_template('error.html',error = 'An error occurred!')
 
@@ -171,7 +171,7 @@ def addWish():
         return custom_render_template('error.html',error = str(e))
 
 
-@app.route('/getWish')
+@app.route('/get_project_list')
 @requires_auth
 def getWish():
     try:
