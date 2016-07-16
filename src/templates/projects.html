@@ -2,8 +2,8 @@
 
 	{% block header_js_files %}
 
-	<link href="//cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.10.0/css/bootstrap-select.min.css" rel="stylesheet" type="text/css" />
-	<script src="//cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.10.0/js/bootstrap-select.min.js"></script>
+	<link href="../static/bootstrap-select.min.css" rel="stylesheet">
+	<script src="../static/bootstrap-select.min.js"></script>
     <link href="../static/bootstrap-dialog.min.css" rel="stylesheet">
 	<script src="../static/bootstrap-dialog.min.js"></script>
 	<link href="http://getbootstrap.com/examples/jumbotron-narrow/jumbotron-narrow.css" rel="stylesheet">
@@ -17,9 +17,9 @@
 	                type : 'GET',
 	                success: function(res){
 	                  
-		                    var commitLists = JSON.parse(res);
+		                    var data = JSON.parse(res);
 	
-		                    $.each(commitLists,function(index, value){
+		                    $.each(data.data.infos,function(index, value){
 		                        	e.append(
 									$("<option>").html("版本1")
 										.attr(
@@ -33,10 +33,30 @@
 							    	)
 	
 		                    })
+						    e.selectpicker();
+						    e.val(data.data.current).trigger('change');
 							 
 					}
 				})
 			}
+			
+			function DeployVersion(projectId, version) {
+				 postData = {
+					"project_id": projectId,
+					"current": version
+				}
+				 $.ajax({
+	                url : '/deploy_project',
+	                type : 'POST',
+				    data: postData,
+	                success: function(res){
+		                var data = JSON.parse(res);
+		                alert(data.code)
+					}
+				})
+			}
+			
+			
             $.ajax({
                 url : '/get_project_list',
                 type : 'GET',
@@ -91,8 +111,9 @@
 								if (projectId=="") {
 									return alert("请选择项目")
 								}
+								
 								listCommits($select, projectId);
-								setTimeout(function() {$select.selectpicker();}, 500)
+								//setTimeout(function() {$select.selectpicker();}, 500)
 								$content.append($select);
 				                return $content;
 				            },
@@ -101,6 +122,9 @@
 				                label: '确认发布',
 				                action: function(dialog) {
 				                    var $button = this; // 'this' here is a jQuery object that wrapping the <button> DOM element.
+									projectId = $(btn).parent().parent().find("td.id").html();
+									current = $(".selectpicker").val();
+									DeployVersion(projectId, current);
 				                    $button.disable();
 				                    $button.spin();
 				                    dialog.setClosable(false);

@@ -45,6 +45,15 @@ def requires_auth(f):
     return decorated
 
 
+def do_response(code, msg, **data):
+    response = {
+        "code": code,
+        "msg": msg,
+        "data": data or dict()   
+    }
+    return json.dumps(response)
+
+
 def custom_render_template(template, **kw):
     user = session.get('user')
     kw["user"] = user
@@ -136,9 +145,9 @@ def logout():
 def showAddWish():
     return custom_render_template('show_add_project.html')
 
-@app.route('/addWish',methods=['POST'])
+@app.route('/add_project',methods=['POST'])
 @requires_auth
-def addWish():
+def add_project():
     try:
         _title = request.form['inputTitle']
         _link = request.form['inputLink']
@@ -215,6 +224,7 @@ def listGitCommits():
             return json.dumps({"code":10000, "msg": "项目不存在"})
         
         name = data[0][1]
+        current = data[0][2]
         repo = git.Repo(GIT_BASE_DIR + "/" + name)
 
         r=repo.iter_commits()
@@ -227,10 +237,48 @@ def listGitCommits():
                     }
             commit_list.append(commit)
 
-        return json.dumps(commit_list)
+        data = {
+            "code": 0,
+            "msg" : "",
+            "data": {
+                "infos" : commit_list,
+                "current": current
+                
+            }
+        }
+        return json.dumps(data)
     except Exception as e:
         return custom_render_template('error.html', error = str(e))
 		
+
+
+@app.route('/deploy_project',methods=['POST'])
+@requires_auth
+def deploy_project():
+    try:
+        project_id = request.form['project_id']
+        version = request.form['current']
+        print project_id, version, "-----deploy_project"
+        conn = mysql.connect()
+        cursor = conn.cursor()
+        sql_string = '''
+            update project set current=%s where id=%s
+            '''
+        cursor.execute(sql_string, (version, project_id))
+
+        data = cursor.fetchall()
+
+        if len(data) is 0:
+            conn.commit()
+            return do_response(0, "发布成功")
+        else:
+            return do_response(10000, '服务器异常')
+
+    except Exception as e:
+        print(str(e))
+        return do_response(10000, '请求异常').encode("utf8")
+
 		
+        
 if __name__ == "__main__":
     app.run(port=80, debug=True)
