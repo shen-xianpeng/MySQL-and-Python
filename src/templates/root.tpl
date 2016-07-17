@@ -5,11 +5,11 @@
     <title>代码部署</title>
  
  
-    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
-    <link href="http://getbootstrap.com/examples/jumbotron-narrow/jumbotron-narrow.css" rel="stylesheet">
+    <link href="/static/vendor/css/bootstrap.min.css" rel="stylesheet" type="text/css" />
+    <link href="/static/jumbotron-narrow.css" rel="stylesheet">
  
-    <script src="../static/js/jquery-1.12.2.js"></script>
-	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+    <script src="/static/js/jquery-1.12.2.js"></script>
+	<script src="/static/bootstrap.min.js"></script>
 
  	{% block css_files %}
 	{% endblock %}

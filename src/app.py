@@ -51,7 +51,7 @@ def do_response(code, msg, **data):
         "msg": msg,
         "data": data or dict()   
     }
-    return json.dumps(response)
+    return json.dumps(response).decode('unicode-escape').encode('utf8')
 
 
 def custom_render_template(template, **kw):
@@ -227,7 +227,7 @@ def listGitCommits():
         current = data[0][2]
         repo = git.Repo(GIT_BASE_DIR + "/" + name)
 
-        r=repo.iter_commits()
+        r=repo.iter_commits("master")
         commit_list = []
         for c in islice(r, 0, 10, 1):
             commit = {
